@@ -1,3 +1,4 @@
-#define MEMSIZE (8*8)    /* 64K */
+#define MEMSIZE (256*256)    /* 64K */
 
 extern unsigned char memory[];
+extern volatile int keepRunning;

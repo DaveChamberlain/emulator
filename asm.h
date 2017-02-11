@@ -1,7 +1,7 @@
 void assemble(char*);
 void exe(char*);
 int load(char*, int);
-int run(int);
+int run(int, int);
 void disassemble (int address, unsigned char*, unsigned char*, unsigned char*);
 void dis (char*);
 void disaddr (int);

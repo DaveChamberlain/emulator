@@ -37,7 +37,7 @@ unsigned char toopcode(char *word) {
     else if (strcmp(word, "jlez") == 0)
         opcode = JLEZ << 4;
     else if (strcmp(word, "jalr") == 0)
-        opcode = JALR << 2;
+        opcode = JALR << 4;
     else if (strcmp(word, "end") == 0)
         opcode = END << 4;
     else if (strcmp(word, "lui") == 0)
@@ -46,6 +46,11 @@ unsigned char toopcode(char *word) {
         opcode = LLI << 4;
 
     return opcode;
+}
+
+void dump_registers(void) {
+    printf ("PC:   0x%04x    A: 0x%02x    B: 0x%02x     C: 0x%02x     D: 0x%02x\n", pc,
+            registers[0], registers[1], registers[2], registers[3]);
 }
 
 void disassemble_byte (unsigned char byte, unsigned char *op, unsigned char *p1, unsigned char *p2) {
@@ -115,7 +120,7 @@ void dis(char *fn) {
     int loc = 0;
     
     while (!feof(fp)) {
-        printf ("%02d  ", loc++);
+        printf ("%04x  ", loc++);
         disbyte(ch);
         ch = fgetc(fp);
     }
@@ -184,18 +189,19 @@ void execute_byte(unsigned char byte) {
     }
 }
 
-void run(int address) {
+void run(int address, int steps) {
     unsigned char byte;
+    char infinite = steps == 0;
     int x = 0;
 
     pc = address;
     byte = memory[pc];
 
-    while ((byte >> 4) != END && x++ < 10) {
-        execute_byte(byte);
-        printf("%02x  ", pc);
+    while ((byte >> 4) != END && keepRunning && (infinite || steps-- >= 0)) {
+        printf("%04x  ", pc++);
         disbyte(byte);
-        byte = memory[++pc];
+        execute_byte(byte);
+        byte = memory[pc];
     }
 }
 
@@ -258,17 +264,15 @@ void assemble(char *fn) {
 
 int load(char *fn, int addr) {
     FILE *fp = fopen(fn, "r");
-    unsigned char ch;
+    unsigned char ch = fgetc(fp);
     int size = 0;
     
     while (!feof(fp)) {
-        memory[addr++] = fgetc(fp);
+        memory[addr++] = ch;
+        ch = fgetc(fp);
         size++;
     }
 
     return size - 1;
 }
 
-void dump_registers(void) {
-    printf ("A: 0x%02x    B: 0x%02x     C: 0x%02x     D: 0x%02x\n", registers[0], registers[1], registers[2], registers[3]);
-}
