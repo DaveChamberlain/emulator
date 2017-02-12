@@ -20,6 +20,11 @@ int pc;
 #define LUI    0x08
 #define LLI    0x0C
 
+#define MAX_LABELS 20
+char *labelMap[MAX_LABELS];
+int addressMap[MAX_LABELS];
+int labelMapCount = 0;
+
 char *ops[16] = {"ADD", "SUB", "LOAD", "STORE", "JLEZ", "JALR", "???", "HALT",
                  "LUI", "???", "???", "???", "LLI", "???", "???", "???"};
 
@@ -231,6 +236,59 @@ unsigned char exe(char *line) {
     return byte;
 }
 
+void addLabel(char *label, int addr) {
+    *(label + strlen(label) - 1) = 0;
+    labelMap[labelMapCount] = strdup(label);
+    addressMap[labelMapCount] = addr;
+    labelMapCount++;
+}
+
+int getLabel(char *label) {
+    int i;
+
+    for(i = 0; i < labelMapCount; i++) {
+        if (strcmp(label, labelMap[i]) == 0) {
+            return addressMap[i];
+        }
+    }
+
+    return 0;
+}
+
+void scan(char *fn) {
+    FILE *fp = fopen(fn, "r");
+
+    char *line;
+    char *op;
+
+    int byte = 0;
+
+    int i;
+
+    for(i = 0; i < MAX_LABELS; i++) {
+        if(labelMap[i] != NULL)
+            free (labelMap[i]);
+        labelMap[i] = NULL;
+    }
+    labelMapCount = 0;
+
+    unsigned char opcode, mask1, mask2;
+    while ((line = readline("", fp)) != NULL) {
+        normalize(line);
+        squish(line);
+        if (strlen(line) > 0) {
+            op = split(line, " ", 1);
+            if (*(op + strlen(op)-1) == ':')
+                addLabel(op, byte);
+            else
+                byte++;
+            free (op);
+        }
+        free (line);
+    }
+    fclose (fp);
+}
+
 void assemble(char *fn) {
     FILE *fp = fopen(fn, "r");
     FILE *outfp = fopen("a.asm", "w");
@@ -241,23 +299,41 @@ void assemble(char *fn) {
 
     unsigned char opcode, mask1, mask2;
 
+    scan(fn);
+
     while ((line = readline("", fp)) != NULL) {
         normalize(line);
         if (strlen(line) > 0) {
             op = split(line, " ", 1);
             opcode = toopcode(op);
 
-            mask1 = 0;
-            mask2 = 0;
+            if (*(op + strlen(op)-1) != ':') {
+                mask1 = 0;
+                mask2 = 0;
 
-            if (opcode >> 4 != HALT) {
-                squish(line);
-                p1 = split(line, ",", 1);
-                mask1 = mask(*p1, 2) << (opcode & 0x80 ? 4 : 2);
-                mask2 = mask(*line, (opcode & 0x80 ? 4: 2));
+                if (opcode >> 4 != HALT) {
+                    squish(line);
+                    p1 = split(line, ",", 1);
+                    mask1 = mask(*p1, 2) << (opcode & 0x80 ? 4 : 2);
+                    if (*line == '$') {
+                        char *garbage = split(line, "$", 1);
+                        char *label = split(line, "&", 1);
+                        free (garbage);
+                        int addr = getLabel(label);
+                        int bitmask = (int) strtol(line, NULL, 0);
+                        mask2 = bitmask & addr;
+
+                        if (bitmask > 0x0f)
+                            mask2 = mask2 >> 4;
+                        
+                        free (label);
+                        }
+                    else
+                        mask2 = mask(*line, (opcode & 0x80 ? 4: 2));
+                }
+                fprintf(outfp, "      %02x\n", opcode | mask1 | mask2);
+                fprintf(outbinp, "%c", opcode | mask1 | mask2);
             }
-            fprintf(outfp, "      %02x\n", opcode | mask1 | mask2);
-            fprintf(outbinp, "%c", opcode | mask1 | mask2);
             free (op);
         }
         free (line);
