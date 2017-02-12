@@ -1,0 +1,7 @@
+#!/bin/bash
+
+(echo "load assignment.bin"
+ echo "poke 0xfe 2"
+ echo "run 0"
+ echo "dump 0xff 1"
+ echo "exit") | ./em

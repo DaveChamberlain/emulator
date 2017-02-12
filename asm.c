@@ -16,11 +16,11 @@ int pc;
 #define STORE  0x03
 #define JLEZ   0x04
 #define JALR   0x05
-#define END    0x06
+#define HALT   0x07
 #define LUI    0x08
 #define LLI    0x0C
 
-char *ops[16] = {"ADD", "SUB", "LOAD", "STORE", "JLEZ", "JALR", "END", "???", 
+char *ops[16] = {"ADD", "SUB", "LOAD", "STORE", "JLEZ", "JALR", "???", "HALT",
                  "LUI", "???", "???", "???", "LLI", "???", "???", "???"};
 
 unsigned char toopcode(char *word) {
@@ -39,7 +39,7 @@ unsigned char toopcode(char *word) {
     else if (strcmp(word, "jalr") == 0)
         opcode = JALR << 4;
     else if (strcmp(word, "end") == 0)
-        opcode = END << 4;
+        opcode = HALT << 4;
     else if (strcmp(word, "lui") == 0)
         opcode = LUI << 4;
     else if (strcmp(word, "lli") == 0)
@@ -49,7 +49,7 @@ unsigned char toopcode(char *word) {
 }
 
 void dump_registers(void) {
-    printf ("PC:   0x%04x    A: 0x%02x    B: 0x%02x     C: 0x%02x     D: 0x%02x\n", pc,
+    printf ("PC: 0x%04x  A: 0x%02x  B: 0x%02x  C: 0x%02x  D: 0x%02x", pc,
             registers[0], registers[1], registers[2], registers[3]);
 }
 
@@ -100,9 +100,9 @@ void disbyte (unsigned char byte) {
     }
 
     if (op & 0x08)
-        printf ("%02x: (%5s %s 0x%x)\t%02x %02x %02x\n", byte, ops[op], regs[p1], p2, op, p1, p2);
+        printf ("%02x: [%5s %s 0x%x]\t%02x %02x %02x", byte, ops[op], regs[p1], p2, op, p1, p2);
     else
-        printf ("%02x: (%5s %s %s)\t%02x %02x %02x\n", byte, ops[op], regs[p1], regs[p2], op, p1, p2);
+        printf ("%02x: [%5s %s %s]\t%02x %02x %02x", byte, ops[op], regs[p1], regs[p2], op, p1, p2);
 }
 
 void disaddr (int address) {
@@ -122,18 +122,10 @@ void dis(char *fn) {
     while (!feof(fp)) {
         printf ("%04x  ", loc++);
         disbyte(ch);
+        printf("\n");
         ch = fgetc(fp);
     }
 }
-
-/*void exe (int address) {
-    unsigned char op;
-    unsigned char p1;
-    unsigned char p2;
-
-    disassemble(address, &op, &p1, &p2);
-    printf ("Dis from %04x: %02x %02x %04x\n", address, op, p1, p2);
-}*/
 
 unsigned char mask(char reg, int size) {
     if (size == 2)
@@ -151,6 +143,7 @@ void execute_byte(unsigned char byte) {
     unsigned char op;
     unsigned char p1;
     unsigned char p2;
+    int new_pc;
 
     disassemble_byte(byte, &op, &p1, &p2);
     switch (op) {
@@ -165,8 +158,9 @@ void execute_byte(unsigned char byte) {
                pc = registers[p1];
             break;
         case JALR:
-            registers[p2] = pc + 1;
+            new_pc = pc + 1;
             pc = registers[p1];
+            registers[p2] = new_pc;
             break;
         case LOAD:
             registers[p1] = memory[registers[p2]];
@@ -182,7 +176,7 @@ void execute_byte(unsigned char byte) {
             registers[p1] &= 0xF0;
             registers[p1] |= p2;
             break;
-        case END:
+        case HALT:
             p1 = 0;
             p2 = 0;
             break;
@@ -193,15 +187,24 @@ void run(int address, int steps) {
     unsigned char byte;
     char infinite = steps == 0;
     int x = 0;
+    int start_addr, end_addr;
 
     pc = address;
     byte = memory[pc];
 
-    while ((byte >> 4) != END && keepRunning && (infinite || steps-- >= 0)) {
+    while ((byte >> 4) != HALT && keepRunning && (infinite || steps-- >= 0)) {
+        start_addr = pc;
         printf("%04x  ", pc++);
         disbyte(byte);
+        printf (" -- ");
         execute_byte(byte);
+        dump_registers();
+        printf("\n");
         byte = memory[pc];
+        if (pc == start_addr) {
+            keepRunning = 0;
+            printf("-- Endless loop detected\n");
+        }
     }
 }
 
@@ -221,6 +224,9 @@ unsigned char exe(char *line) {
     byte = opcode | mask1 | mask2;
 
     disbyte(byte);
+    printf (" -- ");
+    dump_registers();
+    printf("\n");
     execute_byte(byte);
     return byte;
 }
@@ -236,15 +242,15 @@ void assemble(char *fn) {
     unsigned char opcode, mask1, mask2;
 
     while ((line = readline("", fp)) != NULL) {
+        normalize(line);
         if (strlen(line) > 0) {
-            normalize(line);
             op = split(line, " ", 1);
             opcode = toopcode(op);
 
             mask1 = 0;
             mask2 = 0;
 
-            if (opcode >> 4 != END) {
+            if (opcode >> 4 != HALT) {
                 squish(line);
                 p1 = split(line, ",", 1);
                 mask1 = mask(*p1, 2) << (opcode & 0x80 ? 4 : 2);

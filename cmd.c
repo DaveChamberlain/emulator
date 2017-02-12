@@ -43,6 +43,7 @@ int main() {
             int size = atoi(cmd_line);
             memdump(address, size);
             dump_registers();
+            printf("\n");
         } else if (strcmp(command, "run") == 0) {
             int address = (int)strtol(split(cmd_line, " ", 0), NULL, 0);
             int steps = (int)strtol(split(cmd_line, " ", 0), NULL, 0);
@@ -51,6 +52,10 @@ int main() {
         } else if (strcmp(command, "disaddr") == 0) {
             int address = atoi(split(split(cmd_line, " ", 0), " ", 0));
             disaddr(address);
+        } else if (strcmp(command, "poke") == 0) {
+            int address = (int)strtol(split(cmd_line, " ", 0), NULL, 0);
+            int val = (int)strtol(split(cmd_line, " ", 0), NULL, 0);
+            memory[address] = val;
         } else if (strcmp(command, "dis") == 0) {
             dis(cmd_line);
         } else if (strcmp(command, "exit") == 0) {

@@ -1,0 +1,17 @@
+#include <stdio.h>
+
+unsigned char program[0x16] = {0xbf,0xfe,0x23,0x15,0xa0,0xe3,
+                               0xb1,0xf0,0x4e,0x04,0xb0,0xf1,
+                               0x1b,0xb0,0xf6,0x5f,0xbf,0xff,
+                               0x37,0xb1,0xf5,0x5f};
+
+int main(void) {
+    FILE *fp = fopen("assignment.bin", "w");
+    int i = 0;
+
+    for (i = 0; i < 22; i++) {
+        fprintf(fp, "%c", program[i]);
+    }
+
+    fclose(fp);
+}

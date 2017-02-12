@@ -33,7 +33,7 @@ void normalize(char *original) {
     char *src = original;
     char *dst = original;
     
-    while (*src != 0) {
+    while (*src != 0 && *src != ';') {
         if (*src != ' ' && *src != ';')
             *dst++ = *src++;
         else if (*src == ' ') {
