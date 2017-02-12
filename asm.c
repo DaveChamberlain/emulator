@@ -29,7 +29,7 @@ char *ops[16] = {"ADD", "SUB", "LOAD", "STORE", "JLEZ", "JALR", "???", "HALT",
                  "LUI", "???", "???", "???", "LLI", "???", "???", "???"};
 
 unsigned char toopcode(char *word) {
-    unsigned char opcode = 0x00;
+    unsigned char opcode = 0x01;
 
     if (strcmp(word, "add") == 0)
         opcode = ADD << 4;
@@ -307,7 +307,9 @@ void assemble(char *fn) {
             op = split(line, " ", 1);
             opcode = toopcode(op);
 
-            if (*(op + strlen(op)-1) != ':') {
+            if (*(op + strlen(op)-1) == ':') {
+                ;   // do we need to do anything here?
+            } else if (opcode > 1 && strcmp(op, "") != 0) {
                 mask1 = 0;
                 mask2 = 0;
 
