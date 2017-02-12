@@ -275,9 +275,9 @@ void scan(char *fn) {
     unsigned char opcode, mask1, mask2;
     while ((line = readline("", fp)) != NULL) {
         normalize(line);
+        op = split(line, " ", 1);
         squish(line);
-        if (strlen(line) > 0) {
-            op = split(line, " ", 1);
+        if (strlen(op) > 0 || strlen(line) > 0) {
             if (*(op + strlen(op)-1) == ':')
                 addLabel(op, byte);
             else
@@ -309,7 +309,7 @@ void assemble(char *fn) {
 
             if (*(op + strlen(op)-1) == ':') {
                 ;   // do we need to do anything here?
-            } else if (opcode > 1 && strcmp(op, "") != 0) {
+            } else if (opcode != 1 && strcmp(op, "") != 0) {
                 mask1 = 0;
                 mask2 = 0;
 
