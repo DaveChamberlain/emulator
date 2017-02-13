@@ -330,8 +330,9 @@ void assemble(char *fn) {
                         
                         free (label);
                         }
-                    else
+                    else {
                         mask2 = mask(*line, (opcode & 0x80 ? 4: 2));
+                    }
                 }
                 fprintf(outfp, "      %02x\n", opcode | mask1 | mask2);
                 fprintf(outbinp, "%c", opcode | mask1 | mask2);

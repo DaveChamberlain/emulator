@@ -63,13 +63,15 @@ int main() {
         } else if (strcmp(command, "help") == 0) {
             printf("Emulator Help:\n");
             printf("   ASM <filename>                   - Assemble filename, creating a.asm and a.bin\n");
-            printf("   DISADDR <address>                - Disasemble the bytecode at address and making it redable\n");
             printf("   DIS <filename>                   - Disasemble the filename and making it redable\n");
-            printf("   LOAD <filename> <decimal addr>   - Load the binary file into memory\n");
-            printf("   DUMP [<decimal address> <size>]  - Dump starting at address 'size' bytes and registers\n");
+            printf("   DISADDR <address>                - Disasemble the bytecode at address and making it redable\n");
+            printf("   DUMP <address> <size>            - Dump starting at address 'size' bytes and registers\n");
             printf("   EXE <assembly instruction>       - Execute the instruction\n");
             printf("   EXIT                             - Get out, go away, stop the emulator\n");
+            printf("   LOAD <filename> <address>        - Load the binary file into memory\n");
+            printf("   POKE <address> <value>           - Put a value in a memory location\n");
             printf("\n");
+            printf("NOTE: EXE is an optional command, simply giving an assembly instruction will work\n");
         } else {
             exe(original_cmd);
         }

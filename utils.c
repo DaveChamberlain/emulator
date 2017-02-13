@@ -83,6 +83,7 @@ char *split(char *original, char *delimiter, int lower) {
     int i;
 
     strncpy (word, original, split_pos);
+    *(word + split_pos) = 0;
 
     if (split_point != NULL) {
         split_pos++;
