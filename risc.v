@@ -57,16 +57,14 @@ module RiSC ();
 
 		m[254]=2;	//memory[FE] is 2
 
-		//TODO: once you have the times three test program running, put your fibonacci here instead
-		//note: make the last instruction of your program HALT instead of infinite loop.
-		// the instruction is 8'h70
+		// Finuacci code
    
-                m[00]='hbf; m[01]='hf0; m[02]='h90; m[03]='hd0; m[04]='h37; m[05]='hff; m[06]='h37; 
-                m[07]='hf1; m[08]='hd1; m[09]='h37; m[10]='hf0; m[11]='h23; m[12]='hf1; m[13]='h27; 
-                m[14]='h2b; m[15]='h08; m[16]='hff; m[17]='h3b; m[18]='hf0; m[19]='h37; m[20]='h23; 
-                m[21]='hff; m[22]='h27; m[23]='hf1; m[24]='h37; m[25]='ha0; m[26]='he1; m[27]='hfe; 
-                m[28]='h27; m[29]='h16; m[30]='h37; m[31]='h16; m[32]='ha2; m[33]='he6; m[34]='h49; 
-                m[35]='hea; m[36]='ha0; m[37]='h5a; m[38]='h70; 
+        m[00]='hbf; m[01]='hf0; m[02]='h90; m[03]='hd0; m[04]='h37; m[05]='hff; m[06]='h37; 
+        m[07]='hf1; m[08]='hd1; m[09]='h37; m[10]='hf0; m[11]='h23; m[12]='hf1; m[13]='h27; 
+        m[14]='h2b; m[15]='h08; m[16]='hff; m[17]='h3b; m[18]='hf0; m[19]='h37; m[20]='h23; 
+        m[21]='hff; m[22]='h27; m[23]='hf1; m[24]='h37; m[25]='ha0; m[26]='he1; m[27]='hfe; 
+        m[28]='h27; m[29]='h16; m[30]='h37; m[31]='h16; m[32]='ha2; m[33]='he6; m[34]='h49; 
+        m[35]='hea; m[36]='ha0; m[37]='h5a; m[38]='h70; 
 
 		m[254]=6;	//memory[FE] is 6
 
@@ -124,10 +122,6 @@ module RiSC ();
 				$display("PC=%h, inst=%h, op=JALR, A=%h, B=%h, C=%h, D=%h",pc,inst,r[0],r[1],r[2],r[3]);
 				end
 
-
-			//TODO: put your code here
-
-
 			`HALT:	begin
 				$display("PC=%h, inst=%h, op=HALT, A=%h, B=%h, C=%h, D=%h",pc,inst,r[0],r[1],r[2],r[3]);
 				$display("Memory[FF]=%h",m[255]);
@@ -150,8 +144,6 @@ module RiSC ();
 
 				$display("PC=%h, inst=%h, op=LLI, A=%h, B=%h, C=%h, D=%h",pc,inst,r[0],r[1],r[2],r[3]);
 				end
-
-			//TODO: put your code here
 
 		endcase
 
